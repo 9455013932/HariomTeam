@@ -1,0 +1,281 @@
+import React, { useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import 'react-bootstrap-typeahead/css/Typeahead.css';
+
+function AddressInformationForm({ addressDetail, setAddressDetail }) {
+  const [AreaVillOptions, setAreaVillOptions] = useState([]);
+  const [AreaFullDetails, setAreaFullDetails] = useState([]);
+  const [tehsilOption, setTehsilOption] = useState([]);
+  const [councilOption, setCouncilOption] = useState([]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    const dataId = event.target.selectedOptions[0].getAttribute('data-id');
+    
+    setAddressDetail(prevDetails => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+    
+    console.log(name, value, dataId);
+  };
+  
+
+  const fetchAreaVillOptions = async (input) => {
+    try {
+      const response = await fetch('/api/v1/feedingStaff/searchAreaVill', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: input })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch suggested AreaVill');
+      }
+
+      const data = await response.json();
+      setAreaVillOptions(data);
+    } catch (error) {
+      console.error('Error fetching suggested AreaVill:', error);
+    }
+  };
+
+  const fetchAllAreaDetails = async (EAreaVill) => {
+    try {
+      const response = await fetch('/api/v1/feedingStaff/allAreaDetails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ EAreaVill })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch all area details');
+      }
+  
+      const data = await response.json();
+      setAreaFullDetails(data);
+  
+      const Tehsil = data.map(th => ({ TehId: th.TehId, EName: th.EName }));
+      setTehsilOption(Tehsil);
+  
+      const council = data.map(CId => ({ CounId: CId.CounId, ECouncil: CId.ECouncil }));
+      setTehsilOption(council);
+  
+
+      // if (data[EAreaVill]) {
+      //   setAddressDetail(prevDetails => ({
+      //     ...prevDetails,
+      //     EAreaVill,
+      //     ...data[EAreaVill]
+      //   }));
+      // }
+    } catch (error) {
+      console.error('Error fetching all area details:', error);
+    }
+  };
+  
+
+  return (
+    <div className='w-full h-full mx-auto my-5 px-2 py-4 bg-gray-100' style={{ boxShadow: "0 0 5px 1px #ddd" }}>
+      <div className="container-fluid flex-col gap-2 flex">
+        <div className='flex items-center justify-between py-3'>
+          <div className='text-xl font-bold mb-4'>Address Information</div>
+          <p className='select-none text-sm text-black'><sup>*</sup>fields are required</p>
+        </div>
+        <hr />
+      </div>
+
+      <div className="row flex mt-3">
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Area / Village</Form.Label>
+            <Typeahead
+              id="area-village-typeahead"
+              onInputChange={(value) => fetchAreaVillOptions(value)}
+              onChange={(selected) => {
+                if (selected.length > 0) {
+                  const { EAreaVill } = selected[0];
+                  setAddressDetail(prevDetails => ({
+                    ...prevDetails,
+                    EAreaVill
+                  }));
+                  fetchAllAreaDetails(EAreaVill);
+                }
+              }}
+              options={AreaVillOptions}
+              placeholder='Area/Village'
+              labelKey={"EAreaVill"}
+              renderMenuItemChildren={(option) => (
+                <div>
+                  {option.EAreaVill}
+                </div>
+              )}
+            />
+          </Form.Group>
+        </div>
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Tehsil</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="TehId"
+              value={addressDetail.TehId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select Tehsil--</option>
+              {tehsilOption.map((tehsil) => (
+                <option key={tehsil.TehId} value={tehsil.TehId}>{tehsil.EName}</option>
+              ))}
+              {/* {AreaFullDetails[addressDetail.EAreaVill]?.tehsils.map((tehsil) => (
+                <option key={tehsil.id} value={tehsil.id}>{tehsil.name}</option>
+              ))} */}
+            </Form.Control>
+          </Form.Group>
+        </div>
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Nikaya</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="CounId"
+              value={addressDetail.CounId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select Nikaya--</option>
+              {AreaFullDetails.map((council) => (
+                <option key={council.CounId} value={council.CounId}>{council.ECouncil}</option>
+              ))}
+
+              {/* {AreaFullDetails[addressDetail.EAreaVill]?.councils.map((council) => (
+                <option key={council.id} value={council.id}>{council.name}</option>
+              ))} */}
+            </Form.Control>
+          </Form.Group>
+        </div>
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>VidhanSabha</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="VSId"
+              value={addressDetail.VSId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select VidhanSabha--</option>
+              {AreaFullDetails.map((vidhanSabha) => (
+                <option key={vidhanSabha.VSId} value={vidhanSabha.VSId}>{vidhanSabha.EVidhanSabha}</option>
+              ))}
+              {/* {AreaFullDetails[addressDetail.EAreaVill]?.vidhansabhas.map((vidhanSabha) => (
+                <option key={vidhanSabha.id} value={vidhanSabha.id}>{vidhanSabha.name}</option>
+              ))} */}
+            </Form.Control>
+          </Form.Group>
+        </div>
+
+        {/* <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Ward/Block</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="WBId"
+              value={addressDetail.WBId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select Ward/Block--</option>
+              {AreaFullDetails.map((WB)=>(
+                <option key={WB.WBId} value={WB.WBId}>{WB.EWardBlock}</option>
+              ))}
+
+
+
+              {AreaFullDetails[addressDetail.EAreaVill]?.wardblocks.map((wardBlock) => (
+                <option key={wardBlock.id} value={wardBlock.id}>{wardBlock.name}</option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        </div> */}
+
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Ward/Block</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="WBId"
+              value={addressDetail.WBId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select Ward/Block--</option>
+              {Array.from(new Map(AreaFullDetails.map(WB => [WB.EWardBlock, WB])).values()).map(WB => (
+                <option key={WB.WBId} data-id={WB.EWardBlock} value={WB.WBId}>{WB.EWardBlock}</option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+        </div>
+
+
+
+
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Chak Block/ Panchayat</Form.Label>
+            <Form.Control
+              as="select"
+              className='form-select px-2'
+              name="ChkBlkId"
+              value={addressDetail.ChkBlkId || ""}
+              onChange={handleChange}
+            >
+              <option value="">--Select Chak Block/ Panchayat--</option>
+              {AreaFullDetails.map((CBP) => (
+                <option key={CBP.ChkBlkId} value={CBP.ChkBlkId}>{CBP.ECBPanch.concat('-',CBP.EWardBlock)}</option>
+              ))}
+
+
+              {/* {AreaFullDetails[addressDetail.EAreaVill]?.chakblocks.map((chakblock) => (
+                <option key={chakblock.id} value={chakblock.id}>{chakblock.name}</option>
+              ))} */}
+            </Form.Control>
+          </Form.Group>
+        </div>
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>HNo</Form.Label>
+            <Form.Control
+              type="text"
+              name="HNo"
+              className='px-2'
+              value={addressDetail.HNo || ""}
+              onChange={handleChange}
+              placeholder='HNo'
+            />
+          </Form.Group>
+        </div>
+        <div className="col-md-3 flex-col gap-2 flex mt-1">
+          <Form.Group>
+            <Form.Label>Landmark</Form.Label>
+            <Form.Control
+              type="text"
+              name="Landmark"
+              className='px-2'
+              value={addressDetail.Landmark || ""}
+              onChange={handleChange}
+              placeholder='Landmark'
+            />
+          </Form.Group>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default AddressInformationForm;

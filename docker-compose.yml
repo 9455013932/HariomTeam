@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+
+  server:
+    build:
+      context: ./server
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=your_password
+      - DB_DATABASE=adminportal
+      - DB_CONNECTION_LIMIT=10
+      - CORS_ORIGIN=http://localhost:3000
+      - JWT_SECRET=your_jwt_secret
+      - ACCESS_TOKEN_SECRET=hariom
+      - ACCESS_TOKEN_EXPIRY=1d
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: your_password
+      MYSQL_DATABASE=adminportal
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
