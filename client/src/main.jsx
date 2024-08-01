@@ -33,6 +33,7 @@ import DispatchLetter from './components/QCStaff/DispatchLetter.jsx';
 import SendSMSForm from './components/QCStaff/SendSMSForm.jsx';
 import TelecallerUpload from './components/QCStaff/TelecallerUpload.jsx';
 import TelecallerData from './components/QCStaff/TelecallerData.jsx';
+import MISDistrict from './components/Admin/Reports/MISDistrict.jsx';
 
 const getRoutesForRole = (role) => {
   switch (role) {
@@ -71,6 +72,7 @@ const getRoutesForRole = (role) => {
           <Route path="/areaVill" element={<AreaVill />} />
           <Route path="/pollingStationList" element={<PollongStationList />} />
           <Route path="/pollingStationAllotment" element={<PollingStationAllotment />} />
+          <Route path="/MISDistrict" element={<MISDistrict />} />
         </>
       );
     case 'Sub Admin':

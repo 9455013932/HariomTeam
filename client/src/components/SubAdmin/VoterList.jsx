@@ -69,10 +69,11 @@ function VoterList() {
             {
                 accessorKey: 'Serial No',
                 header: 'S. No.',
-                size: 50,
+                size: 10,
                 Cell: ({ row }) => row.index + 1,
             },
             { accessorKey: 'Id', header: 'Id', size: 10 },
+
             { accessorKey: 'EFName', header: 'Name (English)', size: 20,
                 Cell : ({cell}) =>{
                     const {EFName, ELName }= cell.row.original;
@@ -208,6 +209,7 @@ function VoterList() {
                     </Row>
                     <Button variant="primary" type="submit">Submit</Button>
                 </Form>
+
                 <hr className="my-4" />
                 <h4 className="container mt-3 text-xl font-bold mb-3">Voter List</h4>
                 <div className="overflow-x-auto" style={{ zIndex: -1 }}>
